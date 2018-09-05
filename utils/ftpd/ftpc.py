@@ -1,22 +1,29 @@
-from ftplib import FTP
+import os
+from ftplib import FTP_TLS
 
 class ftpc(object):
 
     def __init__(self, ip, port):
         assert ip != None
         assert port != None
-
-        self.ftpc = FTP('')
+        self.ip = ip
+        self.port = port
 
     def start(self):
-        self.ftpc.connect(self.ip ,self.port)
+        self.ftpc = FTP_TLS(timeout=5.0)
+        self.ftpc.connect(self.ip, int(self.port))
         self.ftpc.login('asuka', 'meowmeowmeow')
 
-    def exit(self):
+    def stop(self):
         self.ftpc.quit()
 
     def upload(self, path):
-        with open(path, 'rb') as f:
-            fileName = os.path.slit(path)[-1]
-            self.ftpc.storbinary('STOR %s' % fileName, f, 8192)
+        try:
+            self.start()
+            with open(path, 'rb') as f:
+                fileName = os.path.split(path)[-1]
+                self.ftpc.storbinary('STOR %s' % fileName, f, 8192)
+            self.stop()
+        except Exception as e:
+            print(e)
 

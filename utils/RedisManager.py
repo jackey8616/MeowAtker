@@ -1,9 +1,10 @@
-import sys, threading, traceback, redis
+import sys, threading, traceback, redis, Queue
 from threading import Event
+
 
 class RedisManager(threading.Thread):
 
-    def __init__(self, ip, port, loopDelay=300, debug=False):
+    def __init__(self, ip, port, loopDelay=300, maxsize=100, debug=False):
         super(RedisManager, self).__init__()
         assert ip != None
         assert port != None
@@ -15,6 +16,8 @@ class RedisManager(threading.Thread):
         self.port = port
         self.rd = None
         self.ps = None
+
+        self.message = Queue.Queue(maxsize=maxsize)
 
     def connect(self, user):
         try:
@@ -44,6 +47,7 @@ class RedisManager(threading.Thread):
         while not self.stopped.wait(self.loopDelay):
             for each in self.ps.listen():
                 if each['type'] == 'message':
+                    self.message.put(each['data'])
                     print(each['data'])
 
     def stop(self):
