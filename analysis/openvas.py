@@ -4,10 +4,10 @@ from prompt_toolkit.patch_stdout import patch_stdout
 
 class Openvas(object):
 
-    def __init__(self, analysis, ftp):
+    def __init__(self, analysis):
         self.analysis = analysis
-        self.session = self.analysis.session
-        self.ftp = ftp
+        self.ftp = self.analysis.ftp
+        self.printField = self.analysis.printField
 
     def process(self, user_input=''):
         with patch_stdout():

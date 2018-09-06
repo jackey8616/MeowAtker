@@ -1,17 +1,24 @@
-import os
+import os, threading
+from threading import Event
 from subprocess import Popen, PIPE
 
 from ftps import ftps
 from ftpc import ftpc
 
-class FTPHandler(object):
+from utils.println import printText
 
-    def __init__(self, ip, port, path, user):
+class FTPHandler(threading.Thread):
+
+    def __init__(self, ip, port, path, user, printField, loopDelay=1):
+        super(FTPHandler, self).__init__()
         assert ip != None
         assert port != None
         assert path != None
         assert user != None
 
+        self.stopped = Event()
+        self.loopDelay = loopDelay
+        self.printField = printField
         self.ip = ip
         self.port = port
         self.path = path
@@ -28,20 +35,29 @@ class FTPHandler(object):
         return not self.isServer()
 
     def upload(self, path):
-        print('Start uploading file from: %s' % path)
+        printText(self.printField, 'Start uploading file from: %s' % path)
         self.ftpc.upload(path)
 
     def start(self):
         if self.isServer():
             #self.ftps.start()
-            self.ftps = Popen(['python', './utils/ftpd/ftps.py', '--ip', '0.0.0.0', '--path', self.path], stdout=PIPE)
-            print('FTP Server inited.')
+            self.ftps = Popen(['python', './utils/ftpd/ftps.py', '--ip', '0.0.0.0', '--path', self.path], stderr=PIPE)
+            printText(self.printField, 'FTP Server inited.')
+            super(FTPHandler, self).start()
+
+    def run(self):
+        if self.isServer():
+            while not self.stopped.wait(self.loopDelay):
+                line = self.ftps.stderr.readline()
+                if line != '':
+                    printText(self.printField, str(line), end='')
 
     def stop(self):
         if self.isServer():
             #self.ftps.stop()
+            self.stopped.set()
             self.ftps.kill()
-            print('FTP Server stopped.')
+            printText(self.printField, 'FTP Server stopped.')
 
 if __name__ == '__main__':
     ftpHandler = FTPHandler('127.0.0.1', 21, os.getcwd())

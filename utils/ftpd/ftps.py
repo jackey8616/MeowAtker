@@ -1,4 +1,4 @@
-import os, click
+import os, click, time
 
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import TLS_FTPHandler
@@ -9,7 +9,6 @@ from pyftpdlib.servers import FTPServer, ThreadedFTPServer
 @click.option('--port', default=21, type=int)
 @click.option('--path', default=os.getcwd(), type=str)
 def ftps(ip, port, path):
-
     if not os.path.exists(path):
         os.makedirs(path)
 

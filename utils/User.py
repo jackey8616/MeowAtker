@@ -1,12 +1,15 @@
 
+from println import println, printText
+
 class User(object):
 
-    def __init__(self, name, role):
+    def __init__(self, name, role, printField):
         assert name != None
         assert role != None
         self.name = name
         self.role = self.roleType(role)
-        print('User: %s with role: %s loggin.' % (self.name, self.role))
+        self.printField = printField
+        printText(self.printField, 'User: %s with role: %s loggin.' % (self.name, self.role))
 
     def roleType(self, role):
         text = role.lower()

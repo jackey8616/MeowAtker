@@ -1,16 +1,18 @@
 import sys, threading, traceback, redis, Queue
 from threading import Event
 
+from println import printText 
 
 class RedisManager(threading.Thread):
 
-    def __init__(self, ip, port, loopDelay=300, maxsize=100, debug=False):
+    def __init__(self, ip, port, printField, loopDelay=300, maxsize=100, debug=False):
         super(RedisManager, self).__init__()
         assert ip != None
         assert port != None
 
         self.loopDelay = loopDelay
         self.stopped = Event()
+        self.printField = printField
         self.debug = debug
         self.ip = ip
         self.port = port
@@ -29,30 +31,26 @@ class RedisManager(threading.Thread):
             self.ps = self.rd.pubsub()
             self.ps.subscribe(['Dashboard', 'Exploit', 'Analysis', 'Defense'])
             self.rd.publish('Dashboard', 'User: %s connected, Role: %s' % (user.getUserName(), user.getRole()))
-            print('Redis inited')
+            printText(self.printField, 'Redis channels inited')
         except Exception as e:
             if (self.debug):
                 traceback.print_exc()
             sys.exit(1)
 
     def start(self):
-        if self.stopped.isSet():
-            self.stopped.clear()
-            self.run()
-        else:
-            super(RedisManager, self).start()
-        print('Redis inited.')
+        super(RedisManager, self).start()
+        printText(self.printField, 'Redis inited.')
 
     def run(self):
         while not self.stopped.wait(self.loopDelay):
             for each in self.ps.listen():
                 if each['type'] == 'message':
                     self.message.put(each['data'])
-                    print(each['data'])
+                    printText(self.printField, each['data'])
 
     def stop(self):
         self.stopped.set()
-        print('Redis exit signal setted.')
+        printText(self.printField, 'Redis exit signal setted.')
 
     def isExit(self):
         return self.stopped.isSet()
