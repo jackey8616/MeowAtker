@@ -19,8 +19,6 @@ from utils.Dashboard import Dashboard
 from analysis.analysis import Analysis
 from exploit.exploit import Exploit
 
-from utils.println import printText
-
 user = None
 redis = None
 ftp = None
@@ -45,10 +43,10 @@ def init(debug):
 
 def stop(debug):
     try:
-        redis.stop()
-        dashboard.stop()
         if user.getRole() == 'None':
             ftp.stop()
+        dashboard.stop()
+        redis.stop()
         return True
     except Exception as e:
         if debug:
@@ -87,12 +85,12 @@ def main(debug, data_path, username, role, host_ip, redis_port, ftp_port):
 
     global user, redis, ftp, dashboard
     user = User(username, role, dashboard_field)
-    redis = RedisManager(ip=host_ip, port=redis_port, printField=dashboard_field, debug=debug)
+    redis = RedisManager(ip=host_ip, port=redis_port, printField=dashboard_field, user=user, debug=debug)
     ftp = FTPHandler(ip=host_ip, port=ftp_port, path=data_path + 'ftp/', user=user, printField=ftp_field)
 
-    dashboard = Dashboard(redis, dashboard_field)
     analysis = Analysis(redis, None, ftp, [dashboard_field, analysis_field])
     exploit = Exploit(redis, None, ftp, [dashboard_field, exploit_field])
+    dashboard = Dashboard(redis, exploit, None, analysis, dashboard_field, debug=debug)
 
     if user.getRole() == 'None':
         leftSplit = HSplit([
@@ -139,7 +137,7 @@ def main(debug, data_path, username, role, host_ip, redis_port, ftp_port):
         elif 'Analysis' in select:
             analysis.process(select, 'help')
         else:
-            printText(dashboard_field, 'init        - Init service\nstop        - Stop service\nexit        - Stop and clode service\n\nexploit     - Enter exploit interface\ndefense     - Enter defense interface\nanalysis    - Enter analysis interface\n')
+            dashboard.process(select, 'help')
 
 
     @kb.add('enter')
@@ -161,10 +159,9 @@ def main(debug, data_path, username, role, host_ip, redis_port, ftp_port):
         elif 'Analysis' in select or userInput.startswith('analysis'):
             select = analysis.process(select, userInput.replace('analysis ', ''))
         elif userInput.startswith('help'):
-            printText(dashboard_field, 'init        - Init service\nstop        - Stop service\nexit        - Stop and clode service\n\nexploit     - Enter exploit interface\ndefense     - Enter defense interface\nanalysis    - Enter analysis interface\n')
+            dashboard.process(select, userInput)
         else:
-            printText(dashboard_field, 'Unknown command, maybe "help" or ctrl+o can let you know somthing.')
-        #printText(dashboard_field, select)
+            dashboard.process(select, userInput)
        
         input_field.text = ''
 

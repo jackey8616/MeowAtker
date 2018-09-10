@@ -9,7 +9,7 @@ class User(object):
         self.name = name
         self.role = self.roleType(role)
         self.printField = printField
-        printText(self.printField, 'User: %s with role: %s loggin.' % (self.name, self.role))
+        printText('User: %s with role: %s loggin.' % (self.name, self.role))
 
     def roleType(self, role):
         text = role.lower()

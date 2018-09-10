@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function 
 
-from nmap import Nmap
-from openvas import Openvas
+from nmap.nmap import Nmap
+from openvas.openvas import Openvas
 
 from utils.println import printText
 
@@ -21,12 +21,17 @@ class Analysis(object):
         elif 'Openvas' in select or user_input.startswith('openvas'):
             return 'Analysis ' + self.openvas.process(select, user_input.replace('openvas ', ''))
         elif user_input.startswith('back'):
-            printText(self.printField, '> ')
+            printText('> ')
             return ''
         elif user_input.startswith('help'):
-            printText(self.printField, 'nmap        - Enter nmap interface\nopenvas     - Enter openvas interface\nAnalysis > ')
+            printText('nmap        - Enter nmap interface\nopenvas     - Enter openvas interface\nAnalysis > ')
             return 'Analysis'
         else:
-            printText(self.printField, 'Analysis > ')
+            printText('Analysis > ')
             return 'Analysis'
+
+    def serverProcess(self, msg):
+        nextRoute = msg.nextRoute()
+        if nextRoute == 'Nmap':
+            self.nmap.serverProcess(msg)
 

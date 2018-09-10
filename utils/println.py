@@ -1,8 +1,16 @@
 from __future__ import unicode_literals, print_function 
 
+import sys
 from prompt_toolkit.document import Document
 
-def printText(outputField, text, end='\n'):
+def printText(text, end='\n', outputField=None):
+    if outputField == None:
+        frameLocals = sys._getframe().f_back.f_back.f_locals
+        if 'self' in frameLocals:
+            outputField = frameLocals['self'].__dict__['printField']
+            #outputField = frameLocals['self']['printField']
+        else:
+            return
     if type(outputField) != list:
         outputField = [outputField]
     for eachField in outputField:

@@ -19,11 +19,11 @@ class ftpc(object):
 
     def upload(self, path):
         try:
-            self.start()
             with open(path, 'rb') as f:
+                self.start()
                 fileName = os.path.split(path)[-1]
                 self.ftpc.storbinary('STOR %s' % fileName, f, 8192)
-            self.stop()
+                self.stop()
         except Exception as e:
             print(e)
 

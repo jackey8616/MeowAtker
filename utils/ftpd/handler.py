@@ -35,14 +35,14 @@ class FTPHandler(threading.Thread):
         return not self.isServer()
 
     def upload(self, path):
-        printText(self.printField, 'Start uploading file from: %s' % path)
+        printText('Start uploading file from: %s' % path)
         self.ftpc.upload(path)
 
     def start(self):
         if self.isServer():
             #self.ftps.start()
             self.ftps = Popen(['python', './utils/ftpd/ftps.py', '--ip', '0.0.0.0', '--path', self.path], stderr=PIPE)
-            printText(self.printField, 'FTP Server inited.')
+            printText('FTP Server inited.')
             super(FTPHandler, self).start()
 
     def run(self):
@@ -50,14 +50,14 @@ class FTPHandler(threading.Thread):
             while not self.stopped.wait(self.loopDelay):
                 line = self.ftps.stderr.readline()
                 if line != '':
-                    printText(self.printField, str(line), end='')
+                    printText(str(line), end='')
 
     def stop(self):
         if self.isServer():
             #self.ftps.stop()
             self.stopped.set()
             self.ftps.kill()
-            printText(self.printField, 'FTP Server stopped.')
+            printText('FTP Server stopped.')
 
 if __name__ == '__main__':
     ftpHandler = FTPHandler('127.0.0.1', 21, os.getcwd())
